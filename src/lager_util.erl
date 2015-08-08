@@ -371,9 +371,9 @@ trace_filter(Query) ->
 %% TODO: Support multiple trace modules 
 %-spec trace_filter(Module :: atom(), Query :: 'none' | [tuple()]) -> {ok, any()}.
 trace_filter(Module, Query) when Query == none; Query == [] ->
-    {ok, _} = glc:compile(Module, glc:null(false));
+    {ok, _} = gr_lc:compile(Module, gr_lc:null(false));
 trace_filter(Module, Query) when is_list(Query) ->
-    {ok, _} = glc:compile(Module, glc_lib:reduce(trace_any(Query))).
+    {ok, _} = gr_lc:compile(Module, gr_lc_lib:reduce(trace_any(Query))).
 
 validate_trace({Filter, Level, {Destination, ID}}) when is_tuple(Filter); is_list(Filter), is_atom(Level), is_atom(Destination) ->
     case validate_trace({Filter, Level, Destination}) of
@@ -415,10 +415,10 @@ validate_trace_filter(Filter) ->
         end.
 
 trace_all(Query) -> 
-	glc:all(trace_acc(Query)).
+	gr_lc:all(trace_acc(Query)).
 
 trace_any(Query) -> 
-	glc:any(Query).
+	gr_lc:any(Query).
 
 trace_acc(Query) ->
     trace_acc(Query, []).
@@ -426,17 +426,17 @@ trace_acc(Query) ->
 trace_acc([], Acc) -> 
 	lists:reverse(Acc);
 trace_acc([{Key, '*'}|T], Acc) ->
-	trace_acc(T, [glc:wc(Key)|Acc]);
+	trace_acc(T, [gr_lc:wc(Key)|Acc]);
 trace_acc([{Key, '!'}|T], Acc) ->
-	trace_acc(T, [glc:nf(Key)|Acc]);
+	trace_acc(T, [gr_lc:nf(Key)|Acc]);
 trace_acc([{Key, Val}|T], Acc) ->
-	trace_acc(T, [glc:eq(Key, Val)|Acc]);
+	trace_acc(T, [gr_lc:eq(Key, Val)|Acc]);
 trace_acc([{Key, '=', Val}|T], Acc) ->
-	trace_acc(T, [glc:eq(Key, Val)|Acc]);
+	trace_acc(T, [gr_lc:eq(Key, Val)|Acc]);
 trace_acc([{Key, '>', Val}|T], Acc) ->
-	trace_acc(T, [glc:gt(Key, Val)|Acc]);
+	trace_acc(T, [gr_lc:gt(Key, Val)|Acc]);
 trace_acc([{Key, '<', Val}|T], Acc) ->
-	trace_acc(T, [glc:lt(Key, Val)|Acc]).
+	trace_acc(T, [gr_lc:lt(Key, Val)|Acc]).
 	
 
 check_traces(_, _,  [], Acc) ->
@@ -452,9 +452,9 @@ check_trace(Attrs, {Filter, _Level, Dest}) when is_list(Filter) ->
     check_trace(Attrs, {trace_all(Filter), _Level, Dest});
 
 check_trace(Attrs, {Filter, _Level, Dest}) when is_tuple(Filter) ->
-    Made = gre:make(Attrs, [list]),
-    glc:handle(?DEFAULT_TRACER, Made),
-    Match = glc_lib:matches(Filter, Made),
+    Made = gr_e:make(Attrs, [list]),
+    gr_lc:handle(?DEFAULT_TRACER, Made),
+    Match = gr_lc_lib:matches(Filter, Made),
     case Match of
 	true ->
 	    Dest;
